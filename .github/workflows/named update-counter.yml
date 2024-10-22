@@ -1,0 +1,36 @@
+name: Update Counter
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *' # This runs the workflow every hour
+
+jobs:
+  update-counter:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Read counter
+      id: read_counter
+      run: |
+        if [ ! -f counter.txt ]; then
+          echo "0" > counter.txt
+        fi
+        COUNTER=$(cat counter.txt)
+        echo "COUNTER=$COUNTER" >> $GITHUB_ENV
+
+    - name: Increment counter
+      run: |
+        COUNTER=$((COUNTER + 1))
+        echo $COUNTER > counter.txt
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add counter.txt
+        git commit -m "Increment counter to $COUNTER"
+        git push
